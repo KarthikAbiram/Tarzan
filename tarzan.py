@@ -2,6 +2,31 @@ import pandas as pd
 import argparse
 import csv
 
+class OutputResults():
+    def __init__(self):
+        self.start_time = None
+        self.start_index = None
+        self.stop_time = None
+        self.stop_index = None
+
+    def to_dict(self):
+        return {
+        "Start Time": self.start_time,
+        "Stop Time": self.stop_time,
+        "Start Index": self.start_index,
+        "Stop Index": self.stop_index
+    }
+
+
+def analyze_segment(segment_df, channel_names, output_results_dict: dict):
+    for channel in channel_names:
+        # Calculate mean, min, max for each channel
+        output_results_dict[f"{channel}.Min"]=segment_df[channel].min()
+        output_results_dict[f"{channel}.Max"]=segment_df[channel].max()
+        output_results_dict[f"{channel}.Mean"]=segment_df[channel].mean()
+
+    return output_results_dict
+
 def process_file(input_file, ref_file, output_file, tolerance, chunksize):
     ref_df = pd.read_csv(ref_file)
     # print(ref_df)
@@ -21,10 +46,7 @@ def process_file(input_file, ref_file, output_file, tolerance, chunksize):
     # Initialize variables
     offset = 0
     output = []
-    output_start_time = 0
-    output_start_index = 0
-    output_stop_time = 0
-    output_stop_index = 0
+    output_results = OutputResults()
     current_target_series = pd.Series(dtype=float) # Just for initialization and not used
 
     # Get 1st expected ref data
@@ -50,24 +72,26 @@ def process_file(input_file, ref_file, output_file, tolerance, chunksize):
             # print(offset, match_index)
             if index == 0:
                 # First match, update start time & offset
-                output_start_time = match_time
-                output_start_index = match_index
+                output_results.start_time = match_time
+                output_results.start_index = match_index
                 offset = match_index
                 # print(output_start_time)
             else:
                 # Second or further matches
                 # Update 'Stop Time' & append this entry to output
-                output_stop_time = match_time
-                output_stop_index = match_index
-                results = pd.Series({'Start Time (s)':output_start_time, 'Stop Time (s)':output_stop_time, 'Start Index':output_start_index, 'Stop Index':output_stop_index})
+                output_results.stop_time = match_time
+                output_results.stop_index = match_index
+                output_results_dict = analyze_segment(input_df.iloc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
+                # results = pd.Series({'Start Time (s)':output_results.start_time, 'Stop Time (s)':output_results.stop_time, 'Start Index':output_results.start_index, 'Stop Index':output_results.stop_index})
+                results = pd.Series(output_results_dict)
                 output_row = pd.concat([previous_target_series.copy(), results])
                 output.append(output_row)
                 # print(output_row)
                 # print("output",output_start_time, output_stop_time)
 
                 # Then update 'Start Time' & 'Offset'
-                output_start_time = match_time
-                output_start_index = match_index
+                output_results.start_time = match_time
+                output_results.start_index = match_index
                 offset = match_index
         else:
             print("No matching row found.")
@@ -76,10 +100,12 @@ def process_file(input_file, ref_file, output_file, tolerance, chunksize):
     # Use last row as the last match
     match_index = mask[mask].index[-1]
     match_time = input_df.iloc[match_index][input_time_column_name]
-    output_stop_time = match_time
-    output_stop_index = match_index
+    output_results.stop_time = match_time
+    output_results.stop_index = match_index
     # Append to output
-    results = pd.Series({'Start Time (s)':output_start_time, 'Stop Time (s)':output_stop_time, 'Start Index':output_start_index, 'Stop Index':output_stop_index})
+    # results = pd.Series({'Start Time (s)':output_results.start_time, 'Stop Time (s)':output_results.stop_time, 'Start Index':output_results.start_index, 'Stop Index':output_results.stop_index})
+    output_results_dict = analyze_segment(input_df.iloc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
+    results = pd.Series(output_results_dict)
     output_row = pd.concat([current_target_series.copy(), results])
     output.append(output_row)
     # print("output",output_start_time, output_stop_time)
