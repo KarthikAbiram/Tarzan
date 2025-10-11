@@ -12,12 +12,12 @@ class OutputResults():
 
     def to_dict(self):
         return {
+        "Time Taken":self.stop_time-self.start_time,
+        "Is Transition?": self.is_transition,
         "Start Index": self.start_index,
         "Stop Index": self.stop_index,
         "Start Time": self.start_time,
-        "Stop Time": self.stop_time,
-        "Time Taken":self.stop_time-self.start_time,
-        "Is Transition?": self.is_transition
+        "Stop Time": self.stop_time
     }
 
 
@@ -41,7 +41,7 @@ def process_file(input_file, ref_file, output_file, tolerance, chunksize):
 
     # Find channel names from ref data
     # All columns except 'Expected Time (s)' are channel names
-    channel_names = [column for column in ref_df.columns.tolist() if column not in ['Expected Time (s)']]
+    channel_names = [column for column in ref_df.columns.tolist() if column not in ['Label','Expected Time (s)']]
     # print(channel_names)
 
     # Find input file time column name
@@ -115,7 +115,7 @@ def process_file(input_file, ref_file, output_file, tolerance, chunksize):
 
                     output_results_dict = analyze_segment(input_df.iloc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
                     results = pd.Series(output_results_dict)
-                    output_row = pd.concat([previous_row.copy(), results])
+                    output_row = pd.concat([current_row.copy(), results])
                     output.append(output_row)
                 else:
                     # No transition segment exists
