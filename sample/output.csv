@@ -1,4 +1,5 @@
-CH0,Start Time (s),Stop Time (s),Start Index,Stop Index
-0,0.0,1.0,0.0,10.0
-1,1.0,2.0,10.0,20.0
-0,2.0,3.0,20.0,30.0
+CH0,Start Index,Stop Index,Start Time,Stop Time,Is Transition?,CH0.Min,CH0.Max,CH0.Mean
+0,0,6,0.0,0.6,False,-0.1,0.1,0.06666666666666667
+0,7,9,0.7,0.9,True,0.4,0.6,0.5
+1,10,19,1.0,1.9,False,0.99,1.04,1.0044444444444445
+0,20,30,2.0,3.0,False,-0.1,0.1,0.030000000000000006
