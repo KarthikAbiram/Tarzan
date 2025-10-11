@@ -16,6 +16,7 @@ class OutputResults():
         "Stop Index": self.stop_index,
         "Start Time": self.start_time,
         "Stop Time": self.stop_time,
+        "Time Taken":self.stop_time-self.start_time,
         "Is Transition?": self.is_transition
     }
 
@@ -51,12 +52,15 @@ def process_file(input_file, ref_file, output_file, tolerance, chunksize):
     output = []
     output_results = OutputResults()
     current_target_series = pd.Series(dtype=float) # Just for initialization and not used
+    current_row = pd.Series(dtype=float) # Just for initialization and not used
 
     # Get 1st expected ref data
     for index, row in ref_df.iterrows():
         # Create previous and current target series
         previous_target_series = current_target_series.copy()
+        previous_row = current_row.copy()
         current_target_series = row[channel_names]
+        current_row = row.copy()
         # print(target_series)
 
         # Input subset
@@ -92,7 +96,7 @@ def process_file(input_file, ref_file, output_file, tolerance, chunksize):
                 output_results.stop_index = prev_segment_stop_index
                 output_results_dict = analyze_segment(input_df.iloc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
                 results = pd.Series(output_results_dict)
-                output_row = pd.concat([previous_target_series.copy(), results])
+                output_row = pd.concat([previous_row.copy(), results])
                 output.append(output_row)
 
                 if match_index - prev_segment_stop_index > 1:
@@ -111,7 +115,7 @@ def process_file(input_file, ref_file, output_file, tolerance, chunksize):
 
                     output_results_dict = analyze_segment(input_df.iloc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
                     results = pd.Series(output_results_dict)
-                    output_row = pd.concat([previous_target_series.copy(), results])
+                    output_row = pd.concat([previous_row.copy(), results])
                     output.append(output_row)
                 else:
                     # No transition segment exists
@@ -134,7 +138,7 @@ def process_file(input_file, ref_file, output_file, tolerance, chunksize):
     # Append to output
     output_results_dict = analyze_segment(input_df.iloc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
     results = pd.Series(output_results_dict)
-    output_row = pd.concat([current_target_series.copy(), results])
+    output_row = pd.concat([current_row.copy(), results])
     output.append(output_row)
     # print("output",output_start_time, output_stop_time)
 
