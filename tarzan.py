@@ -26,6 +26,7 @@ def analyze_segment(segment_df, channel_names, output_results_dict: dict):
         output_results_dict[f"{channel}.Min"]=segment_df[channel].min()
         output_results_dict[f"{channel}.Max"]=segment_df[channel].max()
         output_results_dict[f"{channel}.Mean"]=segment_df[channel].mean()
+        output_results_dict[f"{channel}.Pk to Pk"]=output_results_dict[f"{channel}.Max"]-output_results_dict[f"{channel}.Min"]
 
     return output_results_dict
 
