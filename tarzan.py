@@ -35,9 +35,9 @@ class Tarzan:
 
     def analyze(
         self,
-        input_file=r"sample\analyze\input\all_channels.csv",
-        ref_file=r"sample\analyze\input\reference.csv",
-        output_file=r"sample\analyze\output\all_channel_analysis.csv",
+        input_file=r"sample/analyze/input/all_channels.csv",
+        ref_file=r"sample/analyze/input/reference.csv",
+        output_file=r"sample/analyze/output/all_channel_analysis.csv",
         tolerance=0.1
     ):
         """
@@ -181,8 +181,8 @@ class Tarzan:
 
     def convert(
         self,
-        wfm_folder_path=r"sample\convert\input",
-        output_csv_file_path=r"sample\convert\output\output_wfm_to_csv.csv"
+        wfm_folder_path=r"sample/convert/input",
+        output_csv_file_path=r"sample/convert/output/output_wfm_to_csv.csv"
     ):
         """
         Convert all .wfm files in a folder to a single consolidated CSV file.
