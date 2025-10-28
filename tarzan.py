@@ -85,6 +85,7 @@ class Tarzan:
         output_results = OutputResults()
         current_target_series = pd.Series(dtype=float) # Just for initialization and not used
         current_row = pd.Series(dtype=float) # Just for initialization and not used
+        break_on_no_match_flag = False
 
         # Get 1st expected ref data
         for index, row in ref_df.iterrows():
@@ -159,20 +160,22 @@ class Tarzan:
                     output_results.is_transition = False
                     offset = match_index
             else:
-                print("No matching row found.")
-                return
-            
-        # Use last row as the last match
-        match_index = mask[mask].index[-1]
-        match_time = input_df.iloc[match_index][input_time_column_name]
-        output_results.stop_time = match_time
-        output_results.stop_index = match_index
-        # Append to output
-        output_results_dict = self._analyze_segment(input_df.iloc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
-        results = pd.Series(output_results_dict)
-        output_row = pd.concat([current_row.copy(), results])
-        output.append(output_row)
-        # print("output",output_start_time, output_stop_time)
+                print(f"Match not found at index {index}: {dict(current_row)}")
+                break_on_no_match_flag = True
+                break
+        
+        if not break_on_no_match_flag:
+            # Use last row as the last match
+            match_index = mask[mask].index[-1]
+            match_time = input_df.iloc[match_index][input_time_column_name]
+            output_results.stop_time = match_time
+            output_results.stop_index = match_index
+            # Append to output
+            output_results_dict = self._analyze_segment(input_df.iloc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
+            results = pd.Series(output_results_dict)
+            output_row = pd.concat([current_row.copy(), results])
+            output.append(output_row)
+            # print("output",output_start_time, output_stop_time)
 
         # Write output to csv
         output_df = pd.DataFrame(output)

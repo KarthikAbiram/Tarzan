@@ -1,6 +1,6 @@
-CH0,CH1,Label,Expected Time (s)
-0,0,Idle-1,X
-1,0,Power On,0.1
-1,1,Stress,1
-1,0,Power Down,0.1
-0,0,Idle-2,X
+Label,CH0,CH1,Expected Time (s)
+Idle-1,0,0,X
+Power On,1,0,0.1
+Stress,1,1,1
+Power Down,1,0,0.1
+Idle-2,0,0,X
