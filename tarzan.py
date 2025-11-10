@@ -38,7 +38,7 @@ class Tarzan:
         input_file=r"sample/analyze/input/all_channels.csv",
         ref_file=r"sample/analyze/input/reference.csv",
         output_file=r"sample/analyze/output/all_channel_analysis.csv",
-        tolerance=0.1
+        tolerance=0.01
     ):
         """
         Analyze waveform data against a reference.
@@ -229,6 +229,18 @@ class Tarzan:
         # Log to csv
         all_channel_df.to_csv(output_csv_file_path, index=False)
         print(f'Output generated at: {output_csv_file_path}')
+
+    def analyze_wfm(self, 
+                    wfm_folder_path=r"sample/analyze_wfm/input/wfm",
+                    ref_file=r"sample/analyze_wfm/input/reference.csv",
+                    output_file=r"sample/analyze_wfm/output/all_channel_analysis.csv",
+                    tolerance=0.01):
+        """
+        Takes in a folder containing channel data as individual *.wfm files, converts it to csv and analyzes it
+        """
+        wfm_csv_file_path = Path(output_file).parent + "/all_channel_wfm.csv" 
+        self.convert(wfm_folder_path, wfm_csv_file_path)
+        self.analyze(wfm_csv_file_path, ref_file, output_file, tolerance)
 
 if __name__ == '__main__':
     fire.Fire(Tarzan)
