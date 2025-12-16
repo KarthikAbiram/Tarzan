@@ -3,11 +3,11 @@ Tarzan helps to analyze waveform data (like from oscilloscope) and compare again
 
 # Usage
 ```
-uv run tarzan.py analyze --input=sample\input.csv --ref=sample\reference.csv
+uv run tarzan.py analyze --input_file=sample\analyze\input\all_channels.csv --ref_file=sample\analyze\input\reference.csv
 ```
 Optionally, can also specify the output file location and tolerance as below: 
 ```
-uv run tarzan.py --input=sample\input.csv --ref=sample\reference.csv --output=sample\output.csv --tolerance 0.1
+uv run tarzan.py analyze --input_file=sample\analyze\input\all_channels.csv --ref_file=sample\analyze\input\reference.csv --output_file=sample\analyze\output\all_channel_analysis.csv --tolerance 0.1
 ```
 
 # Sample File Formats
