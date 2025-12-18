@@ -26,6 +26,12 @@ class Tarzan:
     def _analyze_segment(self, segment_df, channel_names, output_results_dict: dict):
         for channel in channel_names:
             # Calculate mean, min, max for each channel
+            if not segment_df.empty:
+                output_results_dict[f"{channel}.Start"] = segment_df[channel].iloc[0]
+                output_results_dict[f"{channel}.End"] = segment_df[channel].iloc[-1]
+            else:
+                output_results_dict[f"{channel}.Start"] = None
+                output_results_dict[f"{channel}.End"] = None
             output_results_dict[f"{channel}.Min"]=segment_df[channel].min()
             output_results_dict[f"{channel}.Max"]=segment_df[channel].max()
             output_results_dict[f"{channel}.Mean"]=segment_df[channel].mean()
@@ -83,33 +89,36 @@ class Tarzan:
         offset = 0
         output = []
         output_results = OutputResults()
-        current_target_series = pd.Series(dtype=float) # Just for initialization and not used
-        current_row = pd.Series(dtype=float) # Just for initialization and not used
+        current_ref_target_series = pd.Series(dtype=float) # Just for initialization and not used
+        current_ref_row = pd.Series(dtype=float) # Just for initialization and not used
         break_on_no_match_flag = False
 
         # Get 1st expected ref data
         for index, row in ref_df.iterrows():
             # Create previous and current target series
-            previous_target_series = current_target_series.copy()
-            previous_row = current_row.copy()
-            current_target_series = row[channel_names]
-            current_row = row.copy()
-            # print(target_series)
+            previous_target_series = current_ref_target_series.copy()
+            previous_row = current_ref_row.copy()
+            current_ref_target_series = row[channel_names]
+            current_ref_row = row.copy()
 
             # Input subset
             input_subset = input_df.iloc[offset:][channel_names]
             # print(input_subset)
 
             # Find the match for the 1st expected ref data across all channel columns within tolerance limit
-            # Generate boolean mask for the search criteria
-            mask = (input_subset - current_target_series).abs().le(tolerance).all(axis=1)
-            # print(mask)
 
+            # Generate boolean mask for the search criteria
+            mask = (input_subset - current_ref_target_series).abs().le(tolerance).all(axis=1)
             # When match is found, set current Time as 'Start Time'
-            if mask.any():
-                match_index = mask[mask].index[0]
+            # if mask.any():
+                # match_index = mask[mask].index[0]
+
+            match_index = self._get_match_index(input_subset, current_ref_target_series, tolerance)
+            # print(match_index)
+            if match_index is not None:
                 match_time = input_df.iloc[match_index][input_time_column_name]
                 # print(offset, match_index)
+
                 if index == 0:
                     # First match, update start time & offset
                     output_results.start_time = match_time
@@ -148,7 +157,7 @@ class Tarzan:
 
                         output_results_dict = self._analyze_segment(input_df.iloc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
                         results = pd.Series(output_results_dict)
-                        output_row = pd.concat([current_row.copy(), results])
+                        output_row = pd.concat([current_ref_row.copy(), results])
                         output.append(output_row)
                     else:
                         # No transition segment exists
@@ -160,7 +169,7 @@ class Tarzan:
                     output_results.is_transition = False
                     offset = match_index
             else:
-                print(f"Match not found at index {index}: {dict(current_row)}")
+                print(f"Match not found at index {index}: {dict(current_ref_row)}")
                 break_on_no_match_flag = True
                 break
         
@@ -173,7 +182,7 @@ class Tarzan:
             # Append to output
             output_results_dict = self._analyze_segment(input_df.iloc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
             results = pd.Series(output_results_dict)
-            output_row = pd.concat([current_row.copy(), results])
+            output_row = pd.concat([current_ref_row.copy(), results])
             output.append(output_row)
             # print("output",output_start_time, output_stop_time)
 
@@ -242,5 +251,48 @@ class Tarzan:
         self.convert(wfm_folder_path, wfm_csv_file_path)
         self.analyze(wfm_csv_file_path, ref_file, output_file, tolerance)
 
+    def _get_match_index(self, dataframe, ref_target_series, tolerance):
+        # Find list of values within tolerance
+        mask = (dataframe - ref_target_series).abs().le(tolerance).all(axis=1)
+        # print(mask)
+        if mask.any():
+            # Find start index and end index of tolerance match
+            idx = mask[mask].index
+            start = idx[0]
+            end = idx[-1]
+            for index, id in enumerate(idx):
+                if (start + index) != id:
+                    end = id
+                    break
+
+            diff = (dataframe.loc[start:end] - ref_target_series).abs().sum(axis=1)
+            # print(diff)
+            if diff.empty:
+                return None
+            index, min_diff = diff.index[0], diff.iloc[0]
+
+            for i, d in diff.items():
+                if i == index: # First Index/Match
+                    min_diff = d
+                elif min_diff <= d:
+                    break
+                else:
+                    min_diff = d
+                    index = i
+
+            # print(index, min_diff)
+            return index
+        else:
+            return None  # If no match, return None
+    
 if __name__ == '__main__':
-    fire.Fire(Tarzan)
+    debug = False
+    # debug = True
+    if not debug:
+        fire.Fire(Tarzan)
+    else:
+        df = pd.read_csv(r'sample\analyze\input\all_channels.csv')[['CH0']]
+        ref_target_series = pd.Series({'CH0':0})
+        tolerance = 0.2
+        result = Tarzan()._get_match_index(df, ref_target_series, tolerance)
+        print(result)
