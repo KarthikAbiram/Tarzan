@@ -247,7 +247,7 @@ class Tarzan:
         """
         Takes in a folder containing channel data as individual *.wfm files, converts it to csv and analyzes it
         """
-        wfm_csv_file_path = Path(output_file).parent + "/all_channel_wfm.csv" 
+        wfm_csv_file_path = Path(output_file).parent / "all_channel_wfm.csv" 
         self.convert(wfm_folder_path, wfm_csv_file_path)
         self.analyze(wfm_csv_file_path, ref_file, output_file, tolerance)
 

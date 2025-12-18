@@ -47,3 +47,8 @@ Sample output CSV file contents:
 | 0   | 0.0            | 1.0           | 0.0         | 10.0       |
 | 1   | 1.0            | 2.0           | 10.0        | 20.0       |
 | 0   | 2.0            | 3.0           | 20.0        | 30.0       |
+
+# Build
+```
+uv run pyinstaller --onefile tarzan.py
+```
