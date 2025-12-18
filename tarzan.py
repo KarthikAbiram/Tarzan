@@ -102,7 +102,7 @@ class Tarzan:
             current_ref_row = row.copy()
 
             # Input subset
-            input_subset = input_df.iloc[offset:][channel_names]
+            input_subset = input_df.loc[offset:][channel_names]
             # print(input_subset)
 
             # Find the match for the 1st expected ref data across all channel columns within tolerance limit
@@ -116,7 +116,7 @@ class Tarzan:
             match_index = self._get_match_index(input_subset, current_ref_target_series, tolerance)
             # print(match_index)
             if match_index is not None:
-                match_time = input_df.iloc[match_index][input_time_column_name]
+                match_time = input_df.loc[match_index][input_time_column_name]
                 # print(offset, match_index)
 
                 if index == 0:
@@ -129,14 +129,14 @@ class Tarzan:
                     # Second or further matches
                     # Identify transition segment and add row for previous segment
                     # The last match of previous series is the stop index of previous segment
-                    segment_with_transition = input_df.iloc[output_results.start_index:match_index][channel_names]
+                    segment_with_transition = input_df.loc[output_results.start_index:match_index][channel_names]
                     transition_mask = (segment_with_transition - previous_target_series).abs().le(tolerance).all(axis=1)
                     prev_segment_stop_index = transition_mask[transition_mask].index[-1]
-                    prev_segment_stop_time = input_df.iloc[prev_segment_stop_index][input_time_column_name]
+                    prev_segment_stop_time = input_df.loc[prev_segment_stop_index][input_time_column_name]
                     output_results.is_transition = False
                     output_results.stop_time = prev_segment_stop_time
                     output_results.stop_index = prev_segment_stop_index
-                    output_results_dict = self._analyze_segment(input_df.iloc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
+                    output_results_dict = self._analyze_segment(input_df.loc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
                     results = pd.Series(output_results_dict)
                     output_row = pd.concat([previous_row.copy(), results])
                     output.append(output_row)
@@ -145,9 +145,9 @@ class Tarzan:
                         # Transition segment exists
                         # Identify end of transition segment and add row for transition segment
                         transition_segment_start_index = prev_segment_stop_index + 1
-                        transition_segment_start_time = input_df.iloc[transition_segment_start_index][input_time_column_name]
+                        transition_segment_start_time = input_df.loc[transition_segment_start_index][input_time_column_name]
                         transition_segment_stop_index = match_index - 1
-                        transition_segment_stop_time = input_df.iloc[transition_segment_stop_index][input_time_column_name]
+                        transition_segment_stop_time = input_df.loc[transition_segment_stop_index][input_time_column_name]
                         # Update 'Stop Time' & append this entry to output
                         output_results.start_index = transition_segment_start_index
                         output_results.start_time = transition_segment_start_time
@@ -155,7 +155,7 @@ class Tarzan:
                         output_results.stop_time = transition_segment_stop_time
                         output_results.is_transition = True
 
-                        output_results_dict = self._analyze_segment(input_df.iloc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
+                        output_results_dict = self._analyze_segment(input_df.loc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
                         results = pd.Series(output_results_dict)
                         output_row = pd.concat([current_ref_row.copy(), results])
                         output.append(output_row)
@@ -176,11 +176,11 @@ class Tarzan:
         if not break_on_no_match_flag:
             # Use last row as the last match
             match_index = mask[mask].index[-1]
-            match_time = input_df.iloc[match_index][input_time_column_name]
+            match_time = input_df.loc[match_index][input_time_column_name]
             output_results.stop_time = match_time
             output_results.stop_index = match_index
             # Append to output
-            output_results_dict = self._analyze_segment(input_df.iloc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
+            output_results_dict = self._analyze_segment(input_df.loc[output_results.start_index:output_results.stop_index], channel_names, output_results.to_dict())
             results = pd.Series(output_results_dict)
             output_row = pd.concat([current_ref_row.copy(), results])
             output.append(output_row)
@@ -188,7 +188,7 @@ class Tarzan:
 
         # Write output to csv
         output_df = pd.DataFrame(output)
-        output_df.to_csv(output_file, index=False)
+        output_df.to_csv(output_file, index=False, float_format="%.4g") # Using 4 significant digits for float
         print(f'Output generated at: {output_file}')
 
     def convert(
