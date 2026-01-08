@@ -1,0 +1,7 @@
+Tarzan is installed and can be invoked from terminal window.
+
+Use command `tarzan help` for usage.
+
+For more details, please refer to https://github.com/KarthikAbiram/Tarzan
+
+Proudly Open Source ❤️

@@ -1,0 +1,5 @@
+Tarzan helps to analyze waveform data (like from oscilloscope) and compare against a reference file for amplitude and timing parameters across multiple channels and generates an output CSV report.
+
+For more details, please refer to https://github.com/KarthikAbiram/Tarzan
+
+Proudly Open Source ❤️
