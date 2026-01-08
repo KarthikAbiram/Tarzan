@@ -50,5 +50,5 @@ Sample output CSV file contents:
 
 # Build
 ```
-uv run pyinstaller --onefile tarzan.py
+uv run pyinstaller tarzan.py
 ```

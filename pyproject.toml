@@ -1,7 +1,7 @@
 [project]
 name = "tarzan"
 version = "0.1.0"
-description = "Add your description here"
+description = "Tarzan helps to analyze waveform data (like from oscilloscope) and compare against a reference file. It then calculates the timing for the different segments for the waveform and generates an output CSV report."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
