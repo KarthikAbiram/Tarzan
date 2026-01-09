@@ -1,0 +1,6 @@
+Label,CH0,Expected Time (s)
+Idle,0,X
+Pulse,1,2
+Idle,0,1
+Pulse,1,2
+Idle,0,X

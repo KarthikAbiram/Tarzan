@@ -1,9 +1,0 @@
-Label,CH0,CH1,Expected Time (s),Time Taken,Is Transition?,Start Index,Stop Index,Start Time,Stop Time,CH0.Min,CH0.Max,CH0.Mean,CH0.Pk to Pk,CH1.Min,CH1.Max,CH1.Mean,CH1.Pk to Pk
-Idle-1,0,0,X,0.6,False,0,6,0.0,0.6,-0.1,0.1,0.06666666666666667,0.2,0.0,0.0,0.0,0.0
-Power On,1,0,0.1,0.10000000000000009,True,7,8,0.7,0.8,0.4,0.4,0.4,0.0,0.0,0.0,0.0,0.0
-Power On,1,0,0.1,0.0,False,9,9,0.9,0.9,,,,,,,,
-Stress,1,1,1,0.0,True,10,10,0.95,0.95,,,,,,,,
-Stress,1,1,1,1.0,False,11,21,1.0,2.0,0.99,1.04,1.004,0.050000000000000044,1.0,1.0,1.0,0.0
-Power Down,1,0,0.1,0.0,True,22,22,2.05,2.05,,,,,,,,
-Power Down,1,0,0.1,0.0,False,23,23,2.1,2.1,,,,,,,,
-Idle-2,0,0,X,0.7999999999999998,False,24,32,2.2,3.0,-0.1,0.1,0.025,0.2,0.0,0.0,0.0,0.0
