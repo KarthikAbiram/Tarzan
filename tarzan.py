@@ -1,5 +1,7 @@
 import pandas as pd
 import argparse
+import sys
+import shutil
 from tm_data_types import read_file
 from pathlib import Path
 import fire
@@ -41,10 +43,10 @@ class Tarzan:
 
     def analyze(
         self,
-        input_file=r"sample/analyze/input/all_channels.csv",
-        ref_file=r"sample/analyze/input/reference.csv",
-        output_file=r"sample/analyze/output/all_channel_analysis.csv",
-        tolerance=0.01
+        input_file=r"all_channels.csv",
+        ref_file=r"reference.csv",
+        output_file=r"tarzan_analysis_report.csv",
+        tolerance=0.1
     ):
         """
         Analyze waveform data against a reference.
@@ -52,15 +54,15 @@ class Tarzan:
         Args:
             input_file (str, optional): 
                 Path to the CSV file containing waveform data from multiple channels.
-                Default: 'sample\\analyze\\input\\all_channels.csv'
+                Default: 'all_channels.csv'
 
             ref_file (str, optional): 
                 Path to the reference CSV file for comparison.
-                Default: 'sample\\analyze\\input\\reference.csv'
+                Default: 'reference.csv'
 
             output_file (str, optional): 
                 Path where the analysis result will be saved.
-                Default: 'sample\\analyze\\output\\all_channel_analysis.csv'
+                Default: 'tarzan_analysis_report.csv'
 
             tolerance (float, optional): 
                 Acceptable tolerance level between the input and reference values.
@@ -193,8 +195,8 @@ class Tarzan:
 
     def convert(
         self,
-        wfm_folder_path=r"sample/convert/input",
-        output_csv_file_path=r"sample/convert/output/output_wfm_to_csv.csv"
+        wfm_folder_path=r".",
+        output_csv_file_path=r"all_channels.csv"
     ):
         """
         Convert all .wfm files in a folder to a single consolidated CSV file.
@@ -202,11 +204,11 @@ class Tarzan:
         Args:
             wfm_folder_path (str, optional): 
                 Path to the folder containing .wfm files to convert.
-                Default: 'sample\\convert\\input'
+                Default: Current Directory
 
             output_csv_file_path (str, optional): 
                 Path to the output CSV file where the merged data will be saved.
-                Default: 'sample\\convert\\output\\output_wfm_to_csv.csv'
+                Default: 'all_channels.csv'
 
         Returns:
             None. Writes the merged waveform data to the specified CSV file.
@@ -240,10 +242,10 @@ class Tarzan:
         print(f'Output generated at: {output_csv_file_path}')
 
     def analyze_wfm(self, 
-                    wfm_folder_path=r"sample/analyze_wfm/input/wfm",
-                    ref_file=r"sample/analyze_wfm/input/reference.csv",
-                    output_file=r"sample/analyze_wfm/output/all_channel_analysis.csv",
-                    tolerance=0.01):
+                    wfm_folder_path=r".",
+                    ref_file=r"reference.csv",
+                    output_file=r"tarzan_analysis_report.csv",
+                    tolerance=0.1):
         """
         Takes in a folder containing channel data as individual *.wfm files, converts it to csv and analyzes it
         """
@@ -251,6 +253,29 @@ class Tarzan:
         self.convert(wfm_folder_path, wfm_csv_file_path)
         self.analyze(wfm_csv_file_path, ref_file, output_file, tolerance)
 
+    def sample(self):
+        """
+        Creates sample input files in the current working directory
+        """
+        # Step 1: Get current working directory path where the sample files has to be created
+        cwd = Path.cwd()
+
+        # Step 2: Get directory containing the current script/EXE
+        if getattr(sys, "frozen", False):
+            # Running as a bundled EXE (PyInstaller, etc.)
+            base_dir = Path(sys.executable).parent
+        else:
+            # Running as a normal Python script
+            base_dir = Path(__file__).resolve().parent
+
+        # Step 3: Get the sample directory path relative to the current script/EXE
+        sample_dir = base_dir / "sample"
+        if not sample_dir.exists():
+            raise FileNotFoundError(f"Sample directory not found: {sample_dir}")
+
+        # Step 4: Make a copy of the contents
+        shutil.copytree(sample_dir, cwd, dirs_exist_ok=True)
+    
     def _get_match_index(self, dataframe, ref_target_series, tolerance):
         # Find list of values within tolerance
         mask = (dataframe - ref_target_series).abs().le(tolerance).all(axis=1)
@@ -291,7 +316,7 @@ if __name__ == '__main__':
     if not debug:
         fire.Fire(Tarzan)
     else:
-        df = pd.read_csv(r'sample\analyze\input\all_channels.csv')[['CH0']]
+        df = pd.read_csv(r'sample\analyze\single_channel\all_channels.csv')[['CH0']]
         ref_target_series = pd.Series({'CH0':0})
         tolerance = 0.2
         result = Tarzan()._get_match_index(df, ref_target_series, tolerance)
