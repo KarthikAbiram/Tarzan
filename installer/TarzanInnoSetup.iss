@@ -26,7 +26,7 @@ InfoBeforeFile=PreInstallText.txt
 InfoAfterFile=PostInstallText.txt
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ; PrivilegesRequired=lowest
-OutputBaseFilename=TarzanSetup_v{#MyAppVersion}
+OutputBaseFilename=TarzanInstaller_v{#MyAppVersion}
 SolidCompression=yes
 WizardStyle=modern
 ArchitecturesAllowed=x64compatible
