@@ -371,13 +371,30 @@ class Tarzan:
     
     def summary(self, input_report_path="tarzan_analysis_report.csv", output_path="tarzan_analysis_summary.csv", filter="`Is Transition?` == False", group_by=["Label"], output_columns=["Count(Label)", "Mean(Time Taken)", "Mean(*.Mean)", "Max(*.Pk to Pk)"]):
         """
-        Generates a summary from the Tarzan Analysis Report.
-        
-        :param input_report_path: Tarzan Analysis CSV Report File Path
-        :param output_path: Output File Path where the summary results are to be saved
-        :param filter: Optional Filter clauses. Eg: `Is Transition?` == False
-        :param group_by: List of columns based on which the summary results has to be grouped and generated
-        :param output_columns: List of output columns & aggregation function in the summary result. Supports wildcards using * in column names. Eg: Count(Label), Mean(Time Taken), Mean(*.Mean), Max(*.Pk to Pk)
+        Generate grouped summary statistics from a Tarzan analysis report.
+
+        Args:
+            input_report_path (str):
+                Path to the input CSV report.
+
+            output_path (str):
+                Path where the summary CSV will be written.
+
+            filter (str):
+                Pandas query string used to filter rows before aggregation.
+                Example:
+                    "`Is Transition?` == False"
+
+            group_by (list[str]):
+                Column names to group by.
+
+            output_columns (list[str]):
+                Aggregations to compute. Supported forms:
+                - Count(column)
+                - Mean(column or wildcard)
+                - Max(column or wildcard)
+
+                Wildcards (e.g. "*.Mean") match all columns ending with ".Mean".
         """
         # Load CSV
         df = pd.read_csv(input_report_path)
