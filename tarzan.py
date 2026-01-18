@@ -390,11 +390,10 @@ class Tarzan:
 
         # Write output to csv
         summary_df.to_csv(output_path, index=False, float_format="%.4g") # Using 4 significant digits for float
+        print(f'Output summary generated at: {output_path}')
 
         # Display result
         print(summary_df)
-
-        return summary_df
     
 if __name__ == '__main__':
     debug = False
