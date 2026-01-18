@@ -398,13 +398,13 @@ class Tarzan:
     
 if __name__ == '__main__':
     debug = False
-    debug = True
+    # debug = True
     if not debug:
         fire.Fire(Tarzan)
     else:
-        # df = pd.read_csv(r'sample\analyze\single_channel\all_channels.csv')[['CH0']]
-        # ref_target_series = pd.Series({'CH0':0})
-        # tolerance = 0.2
-        # result = Tarzan()._get_match_index(df, ref_target_series, tolerance)
-        # print(result)
-        Tarzan().summary(input_report_path=r"D:\Garage\OpenSource\TarzanTest\analyze\single_channel\tarzan_analysis_report.csv")
+        df = pd.read_csv(r'sample\analyze\single_channel\all_channels.csv')[['CH0']]
+        ref_target_series = pd.Series({'CH0':0})
+        tolerance = 0.2
+        result = Tarzan()._get_match_index(df, ref_target_series, tolerance)
+        print(result)
+        # Tarzan().summary(input_report_path=r"sample\analyze\single_channel\tarzan_analysis_report.csv")
