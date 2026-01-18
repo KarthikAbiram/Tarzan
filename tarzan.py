@@ -5,6 +5,7 @@ import shutil
 from tm_data_types import read_file
 from pathlib import Path
 import fire
+import re
 
 class OutputResults():
     def __init__(self):
@@ -309,15 +310,77 @@ class Tarzan:
             return index
         else:
             return None  # If no match, return None
+
+
+    def _generate_dynamic_aggregations(self, columns):
+        # Map normalized agg names to pandas functions
+        agg_func_map = {
+            "count": "count",
+            "mean": "mean",
+            "max": "max",
+            "min": "min",
+            "sum": "sum",
+            "std": "std",
+            "var": "var",
+            "median": "median",
+            "nunique": "nunique",
+        }
+
+        aggregations = {}
+
+        for col in columns:
+            match = re.fullmatch(r"\s*(\w+)\((.+)\)\s*", col)
+            if not match:
+                raise ValueError(f"Invalid output column format: {col}")
+
+            agg_name, source_col = match.groups()
+            agg_name_lower = agg_name.lower()
+
+            if agg_name_lower not in agg_func_map:
+                raise ValueError(f"Unsupported aggregation: {agg_name}")
+
+            aggregations[col] = pd.NamedAgg(
+                column=source_col,
+                aggfunc=agg_func_map[agg_name_lower],
+            )
+        return aggregations
+    
+    def summary(self, input_report_path="tarzan_analysis_report.csv", output_path="tarzan_analysis_summary.csv", filter="`Is Transition?` == False", group_by=["Label"], output_columns=["Count(Label)", "Mean(Time Taken)", "Mean(CH0.Mean)", "Max(CH0.Pk to Pk)"]):
+        # Load CSV
+        df = pd.read_csv(input_report_path)
+
+        # Apply filter if present. Ignore if empty.
+        if filter:
+            df = df.query(filter)
+
+        # Generate dynamic aggregations based on the columns requested
+        aggregations = self._generate_dynamic_aggregations(output_columns)
+
+        # Perform groupby + aggregation
+        summary_df = (
+            df
+            .groupby(group_by, dropna=False)
+            .agg(**aggregations)
+            .reset_index()
+        )
+
+        # Write output to csv
+        summary_df.to_csv(output_path, index=False, float_format="%.4g") # Using 4 significant digits for float
+
+        # Display result
+        print(summary_df)
+
+        return summary_df
     
 if __name__ == '__main__':
     debug = False
-    # debug = True
+    debug = True
     if not debug:
         fire.Fire(Tarzan)
     else:
-        df = pd.read_csv(r'sample\analyze\single_channel\all_channels.csv')[['CH0']]
-        ref_target_series = pd.Series({'CH0':0})
-        tolerance = 0.2
-        result = Tarzan()._get_match_index(df, ref_target_series, tolerance)
-        print(result)
+        # df = pd.read_csv(r'sample\analyze\single_channel\all_channels.csv')[['CH0']]
+        # ref_target_series = pd.Series({'CH0':0})
+        # tolerance = 0.2
+        # result = Tarzan()._get_match_index(df, ref_target_series, tolerance)
+        # print(result)
+        Tarzan().summary(input_report_path=r"sample\analyze\single_channel\tarzan_analysis_report.csv")
