@@ -6,6 +6,7 @@ from tm_data_types import read_file
 from pathlib import Path
 import fire
 import re
+from fnmatch import fnmatch
 
 class OutputResults():
     def __init__(self):
@@ -312,8 +313,7 @@ class Tarzan:
             return None  # If no match, return None
 
 
-    def _generate_dynamic_aggregations(self, columns):
-        # Map normalized agg names to pandas functions
+    def _generate_dynamic_aggregations(self, df, columns):
         agg_func_map = {
             "count": "count",
             "mean": "mean",
@@ -328,24 +328,48 @@ class Tarzan:
 
         aggregations = {}
 
-        for col in columns:
-            match = re.fullmatch(r"\s*(\w+)\((.+)\)\s*", col)
+        for col_expr in columns:
+            # Eg: Mean(CH0.Mean)
+            match = re.fullmatch(r"\s*(\w+)\((.+)\)\s*", col_expr)
             if not match:
-                raise ValueError(f"Invalid output column format: {col}")
+                raise ValueError(f"Invalid output column format: {col_expr}")
 
-            agg_name, source_col = match.groups()
-            agg_name_lower = agg_name.lower()
+            agg_name, source_pattern = match.groups()
+            agg_key = agg_name.lower()
+            # Eg: agg_name/agg_key = mean, 
+            # source_pattern=CH0.Mean (or) *.Mean
 
-            if agg_name_lower not in agg_func_map:
+            if agg_key not in agg_func_map:
                 raise ValueError(f"Unsupported aggregation: {agg_name}")
 
-            aggregations[col] = pd.NamedAgg(
-                column=source_col,
-                aggfunc=agg_func_map[agg_name_lower],
-            )
+            # Wildcard handling
+            if "*" in source_pattern:
+                matched_cols = [
+                    c for c in df.columns
+                    if fnmatch(c, source_pattern)
+                ]
+
+                if not matched_cols:
+                    raise ValueError(
+                        f"No columns match wildcard pattern: {source_pattern}"
+                    )
+
+                for src_col in matched_cols:
+                    out_col = f"{agg_name}({src_col})"
+                    aggregations[out_col] = pd.NamedAgg(
+                        column=src_col,
+                        aggfunc=agg_func_map[agg_key],
+                    )
+            else:
+                # Normal (non-wildcard) case
+                aggregations[col_expr] = pd.NamedAgg(
+                    column=source_pattern,
+                    aggfunc=agg_func_map[agg_key],
+                )
+
         return aggregations
     
-    def summary(self, input_report_path="tarzan_analysis_report.csv", output_path="tarzan_analysis_summary.csv", filter="`Is Transition?` == False", group_by=["Label"], output_columns=["Count(Label)", "Mean(Time Taken)", "Mean(CH0.Mean)", "Max(CH0.Pk to Pk)"]):
+    def summary(self, input_report_path="tarzan_analysis_report.csv", output_path="tarzan_analysis_summary.csv", filter="`Is Transition?` == False", group_by=["Label"], output_columns=["Count(Label)", "Mean(Time Taken)", "Mean(*.Mean)", "Max(*.Pk to Pk)"]):
         # Load CSV
         df = pd.read_csv(input_report_path)
 
@@ -354,7 +378,7 @@ class Tarzan:
             df = df.query(filter)
 
         # Generate dynamic aggregations based on the columns requested
-        aggregations = self._generate_dynamic_aggregations(output_columns)
+        aggregations = self._generate_dynamic_aggregations(df, output_columns)
 
         # Perform groupby + aggregation
         summary_df = (
@@ -383,4 +407,4 @@ if __name__ == '__main__':
         # tolerance = 0.2
         # result = Tarzan()._get_match_index(df, ref_target_series, tolerance)
         # print(result)
-        Tarzan().summary(input_report_path=r"sample\analyze\single_channel\tarzan_analysis_report.csv")
+        Tarzan().summary(input_report_path=r"D:\Garage\OpenSource\TarzanTest\analyze\single_channel\tarzan_analysis_report.csv")
