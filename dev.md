@@ -1,58 +1,16 @@
 # Tarzan
 Tarzan helps to analyze waveform data (like from oscilloscope) and compare against a reference file. It then calculates the timing for the different segments for the waveform and generates an output CSV report.
 
-# Install
-Tarzan can be used either as installer or as a portable EXE. 
-
-Latest version of the EXE and installer is available at https://github.com/KarthikAbiram/Tarzan/releases
-
-# Quick Start
-Generate sample files to understand Tarzan usage:
+# Usage
 ```
-tarzan sample
+uv run tarzan.py analyze --input_file=all_channels.csv --ref_file=reference.csv
 ```
-This would create below sample folders:
+Optionally, can also specify the output file location and tolerance as below: 
 ```
-analyze\single-channel
-analyze\multi-channel
-convert
-```
-## Analyze and Summarize
-Go to one of the analyze sample folder and run the analyze and summary commands:
-```
-cd analyze\single-channel
-tarzan analyze
-tarzan summary
-```
-Analyze generates tarzan_analysis_report.csv
-Summary generates tarzan_analysis_summary.csv
-
-## Convert Tek waveforms to CSV
-This helps to convert waveform files from Tektronix scope to a single *.csv file, which can then be used for analysis.
-
-Go to the convert sample folder and run the covert command:
-```
-cd convert
-tarzan convert
-```
-
-## Help
-```
-tarzan --help
-```
-To get the help of individual commands:
-```
-tarzan convert --help
-tarzan analyze --help
-tarzan summary --help
+uv run tarzan.py analyze --input_file=all_channels.csv --ref_file=reference.csv --output_file=tarzan_analysis_report.csv --tolerance 0.01
 ```
 
 # Sample File Formats
-Use below command to generate the sample files/refer to sample file formats:
-```
-tarzan sample
-```
-
 ## Input File
 Sample input CSV file contents:
 | Time (s) | CH0  |
@@ -90,3 +48,7 @@ Sample output CSV file contents:
 | 1   | 1.0            | 2.0           | 10.0        | 20.0       |
 | 0   | 2.0            | 3.0           | 20.0        | 30.0       |
 
+# Build
+```
+uv run pyinstaller tarzan.py
+```
